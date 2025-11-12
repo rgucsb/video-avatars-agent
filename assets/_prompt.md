@@ -63,16 +63,17 @@ Before implementing safety measures, perform a thorough risk assessment specific
 **Risk categories** include:
 
 * **Misalignment & goal corruption**
-    * Pursuing unintended or proxy goals that lead to harmful outcomes ("reward hacking")
-    * Misinterpreting complex or ambiguous instructions
+
+  * Pursuing unintended or proxy goals that lead to harmful outcomes ("reward hacking")
+  * Misinterpreting complex or ambiguous instructions
 * **Harmful content generation, including brand safety**
-    * Generating toxic, hateful, biased, sexually explicit, discriminatory, or illegal content
-    * Brand safety risks such as Using language that goes against the brand’s values or off-topic conversations
+  * Generating toxic, hateful, biased, sexually explicit, discriminatory, or illegal content
+  * Brand safety risks such as Using language that goes against the brand’s values or off-topic conversations
 * **Unsafe actions**
-    * Executing commands that damage systems
-    * Making unauthorized purchases or financial transactions.
-    * Leaking sensitive personal data (PII)
-    * Data exfiltration
+  * Executing commands that damage systems
+  * Making unauthorized purchases or financial transactions.
+  * Leaking sensitive personal data (PII)
+  * Data exfiltration
 
 Let's talk about Best Practices for Security and Safety of AI Agents.
 
