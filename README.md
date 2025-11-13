@@ -19,11 +19,12 @@ We provide demo assets in the [assets](assets) sub-folder:
     2. Voice Description.
     3. Visual Appearance.
     4. Video Shot Instructions.
-    5. Video script to adapt and split across video chunks.
+    5. Document to adapt and split across video chunks.
 
 ![Capy image](docs/strip.jpg)
 
-🎬 **[Final demo video](videos/anya-capy-final.mp4)**.
+* 📄 Original documentation to deliver as a training video: [Safety and Security for AI Agents](https://google.github.io/adk-docs/safety/).
+* 🎬 **[Final demo video](videos/anya-capy-final.mp4)**.
 
 ## Features
 
