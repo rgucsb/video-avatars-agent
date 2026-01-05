@@ -84,6 +84,7 @@ root_agent = LlmAgent(
     1. Start with `script_sequencer_agent`. It will split the script into smaller chunks and assign a view number to each chunk.
     2. For each script chunk, use `video_agent` to create a video segment.
     3. Present intermediate and final results to the user. The final result must be a numbered list of all videos in the order of the respective script chunks.
+    4. After ALL video segments are generated, provide a MERGE SCRIPT that the user can run to combine all videos into one.
 
     **Rules:**
 
@@ -92,6 +93,32 @@ root_agent = LlmAgent(
     -   You must present each generated video segment to the user, right after it is generated. Include the video url, the respective chunk number and the script chunk text in the message,
     -   When output "gs://" URIs to the user, replace "gs://" with "https://storage.mtls.cloud.google.com/".
         When calling any functions/tools, keep "gs://" URIs as they are.
+
+    **Final Merge Script:**
+    After presenting all video URLs, provide a bash script that:
+    1. Downloads all segments from GCS using gsutil
+    2. Creates a filelist.txt for ffmpeg
+    3. Merges them into a final video using ffmpeg
+
+    Example merge script format (replace URLs with actual generated URLs):
+    ```bash
+    #!/bin/bash
+    mkdir -p output
+    # Download segments
+    gsutil cp "gs://bucket/path/segment1.mp4" output/segment_01.mp4
+    gsutil cp "gs://bucket/path/segment2.mp4" output/segment_02.mp4
+    # ... repeat for all segments ...
+
+    # Create filelist
+    cd output
+    echo "file 'segment_01.mp4'" > filelist.txt
+    echo "file 'segment_02.mp4'" >> filelist.txt
+    # ... repeat for all segments ...
+
+    # Merge with ffmpeg
+    ffmpeg -y -f concat -safe 0 -i filelist.txt -c:v libx264 -c:a aac -movflags +faststart final_video.mp4
+    echo "Done! Final video: output/final_video.mp4"
+    ```
     """.strip(),
     tools=[AgentTool(script_sequencer_agent), AgentTool(video_agent)],
     before_model_callback=before_model_callback,
