@@ -1,157 +1,124 @@
-# AI Agent for Long-form Educational Videos
+# Learner Labs - AI-Generated SAT Tutorial Videos
 
-This repository demonstrates how to build a long-form video generation agent using the [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/), [Gemini 2.5 Flash Image (Nano Banana)](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash-image?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event), and [Veo 3.1](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/veo-3.1-generate-preview?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event).
+This project creates animated SAT math tutorial videos featuring **Nova**, an AI-generated geometric fox character who teaches students how to use Desmos to solve problems quickly and avoid mistakes.
 
-The purpose of the agent is to generate long-form videos with
-custom avatars delivering educational content.
+## What We're Building
 
-It demonstrates character and environment consistency techniques
-that allow producing long videos as a series of 8-second chunks.
+**Goal:** Generate educational videos where Nova (a purple geometric fox) teaches SAT math concepts using Desmos graphing calculator demonstrations.
 
-It also shows how to perform conversion of technical documentation
-to video scripts that sound natural and engaging.
+**The Challenge:** Using Google's Veo 3.1 model to animate only the character while keeping the background (Desmos graphs, question screens) completely static and unmodified.
 
-We provide demo assets in the [assets](assets) sub-folder:
+## Example Use Case
 
-* **4 images** to use as starting frames.
-* **Full [prompt](assets/prompt.md)** with the following sections:
-    1. Character Description
-    2. Voice Description.
-    3. Visual Appearance.
-    4. Video Shot Instructions.
-    5. Document to adapt and split across video chunks.
+Nova walks students through solving a system of equations:
+- Shows the SAT question
+- Opens Desmos and graphs `y = 4x`
+- Adds the quadratic `y = x² - 12`
+- Finds the intersection point
+- Explains the answer with a CTA to practice
 
-![Capy image](docs/strip.jpg)
-
-* 📄 Original documentation to deliver as a training video: [Safety and Security for AI Agents](https://google.github.io/adk-docs/safety/).
-* 🎬 **[Final demo video](videos/anya-capy-final.mp4)**.
-
-## Features
-
-* Original text content conversion for making it sound natural
-* Continuous video generation with character and scene consistency
+**Key Message:** Desmos helps avoid calculation mistakes and solve questions super fast. With practice, students can solve even tough problems in under 30 seconds.
 
 ## Architecture
 
-It is a full-stack web application designed to be deployed on [Google Cloud Run](https://cloud.google.com/run/docs/overview/what-is-cloud-run?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event), with ADK Web UI,
-using [Vertex AI Agent Engine Sessions Service](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/sessions/overview?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event) for session management and [Google Cloud Storage](https://cloud.google.com/storage/docs/introduction?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event) for storing artifacts.
-
-![Architecture](docs/video-agent-arch.jpg)
+Built on [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/) with:
+- **Veo 3.1** for image-to-video generation
+- **Gemini 2.5 Flash Image** for image generation
+- **MCP Server** for media generation tools
 
 ### Agents
+- **Orchestrator** - Main agent coordinating video generation
+- **Script Sequencer** - Converts content to natural-sounding 8-second script chunks
+- **Video Agent** - Generates videos with character animation
 
-* **Orchestrator** (root agent) - The main agent that orchestrates the video generation process. It takes user input and calls sub-agents to perform specific tasks.
-* **Script Sequencer** - Adapts the content into a script that sounds natural when delivered by a speaker. Splits script into chunks up to 8 seconds long.
-* **Video Agent** - facilitates video generation according to instructions and input provided by the Orchestrator.
+## Project Structure
 
-### MCP Server
+```
+assets/
+├── prompt.md              # Character description + 7-scene script
+├── nova_*.png             # Nova character poses (pointing, thinking, waving, celebrating)
+├── desmos/                # Desmos screenshot sequence
+├── view1.png - view7.png  # Composite frames (Nova + Desmos/questions)
+└── learner-labs-logo.png  # Branding
 
-`MediaGenerators` MCP Server with 2 tools:
+agents/video_avatar_agent/
+├── agent.py               # Main agent definition
+└── prompts/video_agent.md # Video generation prompt template
 
-1. `generate_video` - uses [Veo 3.1](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/veo-3.1-generate-preview?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event) model to generate videos. It can use start and frame in addition to the text prompt.
-2. `generate_image` - uses [Gemini 2.5 Flash Image](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash-image?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event) (Nano Banana 🍌) to generate images.
-   It can use source image as a reference. This tool is not used by the repo's agent.
+create_views_v2.py         # Script to composite Nova + backgrounds
+merge_videos.sh            # Merge video segments with ffmpeg
+```
+
+## Video Generation Prompt Strategy
+
+To prevent Veo from adding unwanted artifacts/text overlays:
+
+```
+4K high quality video. NO CAMERA MOVEMENT.
+
+Animate ONLY the purple cartoon fox character on the left side:
+- Mouth animation in perfect sync with speech
+- Modest facial expressions
+- Subtle head movements
+
+The fox says: "[SCRIPT]"
+
+Background stays completely frozen and static. Nothing else moves or changes.
+```
 
 ## Prerequisites
 
-* An existing [Google Cloud Project](https://console.cloud.google.com/?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event). New customers [**get $300 in free credits**](https://cloud.google.com/free?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event) to run, test, and deploy workloads.
-* [Google Cloud SDK](https://cloud.google.com/sdk/docs/install?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event).
-* [Python 3.11+](https://www.python.org/downloads/?utm_campaign=CDR_0xc245fc42_default_b456742732&utm_medium=external&utm_source=event).
+- [Google Cloud Project](https://console.cloud.google.com/) with Vertex AI enabled
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
+- Python 3.11+
+- Access to Veo 3.1 model
 
-## Installation
+## Quick Start
 
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/vladkol/video-avatars-agent
-    cd video-avatars-agent
-    ```
-
-2. Create a Python virtual environment and activate it:
-
-    > We recommend using [`uv`](https://docs.astral.sh/uv/getting-started/installation/)
-
-    ```bash
-    uv venv .venv
-    source .venv/bin/activate
-    ```
-
-3. Install the Python dependencies:
-
-    ```bash
-    uv pip install pip
-    uv pip install -r agents/video_avatar_agent/requirements.txt
-    uv pip install -r mcp/requirements.txt
-    ```
-
-## Configuration
-
-1. Create a `.env` file in the root of the project by copying the `.env-template` file:
-
-    ```bash
-    cp .env-template .env
-    ```
-
-2. Update the `.env` file with your Google Cloud project ID, location, and the name of your GCS bucket for AI assets.
-
-## Running Locally
-
-To start the MCP server run:
-
+1. Clone and install:
 ```bash
-./deployment/run_mcp_local.sh
+git clone https://github.com/rgucsb/video-avatars-agent
+cd video-avatars-agent
+uv venv .venv && source .venv/bin/activate
+uv pip install -r agents/video_avatar_agent/requirements.txt
+uv pip install -r mcp/requirements.txt
 ```
 
-The MCP server will run on `http://localhost:8080`.
+2. Configure `.env` with your GCP project ID and bucket name
 
-To run the agent locally, use the `run_agent_local.sh` script:
-
+3. Generate composite view images:
 ```bash
-./deployment/run_agent_local.sh
+python create_views_v2.py
 ```
 
-This will:
-
-1. Register an Agent Engine resource for using with the session service.
-2. Start a local a web server with the ADK Web UI, which you can access in your browser.
-
-## Deployment
-
-To deploy the MCP server and the agent to Cloud Run, use the `deploy.sh` script:
-
+4. Run the agent:
 ```bash
-./deployment/deploy.sh
+adk web agents --port 8082
 ```
 
-This script will:
+5. Upload view images and submit prompt from `assets/prompt.md`
 
-1. Register an Agent Engine resource for using with the session service.
-2. Deploy the MCP server to Cloud Run.
-3. Deploy the agent to Cloud Run, with the ADK Web UI.
+6. Merge generated segments:
+```bash
+./merge_videos.sh
+```
 
-## How to use the agent
+## Current Status
 
-1. Open the agent's ADK Web UI.
-2. Insert content of [assets/prompt.md](assets/prompt.md) file to the chat box.
-3. Click on the paperclip button 📎, and attach 4 source strip files:
+**Working:**
+- Character compositing with Desmos screenshots
+- Logo/branding integration
+- 7-scene script generation
+- Video segment merging
 
-    * [assets/view1.jpeg](assets/view1.jpeg)
-    * [assets/view2.jpeg](assets/view3.jpeg)
-    * [assets/view3.jpeg](assets/view3.jpeg)
-    * [assets/view4.jpeg](assets/view4.jpeg)
+**In Progress:**
+- Reducing Veo artifacts on static backgrounds
+- Improving prompt engineering for cleaner output
 
-    > **Note:** It is important to select `view1.jpeg` file first.
-    > The first view is what the video starts with.
+## Credits
 
-4. Hit **Enter** key to submit the request.
-   The agent will start converting the script and generating videos.
+Based on [vladkol/video-avatars-agent](https://github.com/vladkol/video-avatars-agent) - AI Agent for Long-form Educational Videos using Google ADK.
 
 ## License
 
-This repository is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
-
-## Disclaimers
-
-This is not an officially supported Google product. This project is not eligible for the [Google Open Source Software Vulnerability Rewards Program](https://bughunters.google.com/open-source-security).
-
-Code and data from this repository are intended for demonstration purposes only. It is not intended for use in a production environment.
+Apache 2.0 License - see [LICENSE](LICENSE) file.
